@@ -31,11 +31,11 @@ impl TryFrom<&[u8; 24]> for Frame {
         }
         let frame = match bytes[18] {
         0x00 => Frame::FrameA {
-            voltage: u16::from_be_bytes(bytes[2..4].try_into().unwrap()) as f32 / 100.0,
-            speed: i16::from_be_bytes(bytes[4..6].try_into().unwrap()) as f32 * 3.6 / 100.0,
-            distance: u32::from_be_bytes(bytes[6..10].try_into().unwrap()) as f32,
-            current: i16::from_be_bytes(bytes[10..12].try_into().unwrap()) as f32 / 100.0,
-            temperature: (i16::from_be_bytes(bytes[12..14].try_into().unwrap()) as f32 / 340.0 + 36.53) / 100.0,
+            voltage: u16::from_be_bytes(to_arr(&bytes[2..4])) as f32 / 100.0,
+            speed: i16::from_be_bytes(to_arr(&bytes[4..6])) as f32 * 3.6 / 100.0,
+            distance: u32::from_be_bytes(to_arr(&bytes[6..10])) as f32,
+            current: i16::from_be_bytes(to_arr(&bytes[10..12])) as f32 / 100.0,
+            temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53) / 100.0,
         },
         0x04 => Frame::FrameB {
             total_distance: u32::from_be_bytes(bytes[2..6].try_into().unwrap()) as f32,
@@ -49,6 +49,13 @@ impl TryFrom<&[u8; 24]> for Frame {
         Ok(frame)
     }
 }
+
+fn to_arr<const N: usize>(arr: &[u8]) -> [u8; N] {
+    arr.try_into().unwrap()
+}
+// fn from_be<T>(bytes: &[u8]) -> T {
+//     T::from_be_bytes(to_arr(bytes))
+// }
 
 #[derive(Debug, Clone, Default)]
 pub struct Settings {
