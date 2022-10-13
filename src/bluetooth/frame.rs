@@ -22,12 +22,12 @@ pub enum Frame {
     // Bytes 20-23: frame footer, 5A 5A 5A 5A
 }
 
-impl TryFrom<[u8; 24]> for Frame {
-    type Error = [u8; 24];
-    fn try_from(bytes: [u8; 24]) -> Result<Frame, [u8; 24]> {
+impl TryFrom<&[u8; 24]> for Frame {
+    type Error = ();
+    fn try_from(bytes: &[u8; 24]) -> Result<Frame, ()> {
         if &bytes[0..=1] != &[0x55, 0xAA]
         || &bytes[20..=23] != &[0x5A; 4] {
-            return Err(bytes);
+            return Err(());
         }
         let frame = match bytes[18] {
         0x00 => Frame::FrameA {
@@ -44,7 +44,7 @@ impl TryFrom<[u8; 24]> for Frame {
             led_mode: bytes[13],
             light_mode: bytes[15],
         },
-        _ => return Err(bytes),
+        _ => return Err(()),
         };
         Ok(frame)
     }
