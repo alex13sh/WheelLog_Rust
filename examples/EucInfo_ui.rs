@@ -42,7 +42,7 @@ impl Application for EucInfo {
             EucInfo {
                 device: Default::default(),
             },
-            Command::perform(Self::connect(), Message::Connected),
+            Command::perform(Self::connect("GotWay_39336".into()), Message::Connected),
         )
     }
 
@@ -65,9 +65,9 @@ impl Application for EucInfo {
         dbg!(&message);
         match message {
             Message::Connect(_name) => {
-                return Command::perform(Self::connect(), Message::Connected);
+                return Command::perform(Self::connect(self.device_name()), Message::Connected);
             }
-            Message::Reconnect => return Command::perform(Self::connect(), Message::Connected),
+            Message::Reconnect => return Command::perform(Self::connect(self.device_name()), Message::Connected),
             Message::Connected(d) => self.device = d,
             Message::Disconnect => self.device = None,
             Message::UpdatedDevice(d) => self.device = Some(d),
@@ -98,9 +98,9 @@ impl EucInfo {
     fn device_name(&self) -> String {
         "GotWay_39336".to_owned()
     }
-    async fn connect() -> Option<bluetooth::Device> {
+    async fn connect(name: String) -> Option<bluetooth::Device> {
         let p = {
-            let res = bluetooth::connect("GotWay_39336").await;
+            let res = bluetooth::connect(&name).await;
             if let Err(ref err) = &res {
                 dbg!(err);
                 return None;

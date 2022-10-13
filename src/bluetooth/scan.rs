@@ -44,7 +44,7 @@ pub async fn get_list() -> Result<Vec<super::Peripheral>, Box<dyn Error>> {
     Ok(Vec::new())
 }
 
-pub async fn connect(name: &'static str) -> Result<super::Peripheral, Box<dyn Error>> {
+pub async fn connect(name: &str) -> Result<super::Peripheral, Box<dyn Error>> {
     let lst = get_list().await?;
     let stream = futures::stream::iter(lst)
         .filter_map(|p| async{Some((p.properties().await.ok()?.unwrap().local_name?, p))})
