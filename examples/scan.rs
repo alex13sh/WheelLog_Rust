@@ -10,7 +10,7 @@ use tokio::time;
 use uuid::Uuid;
 
 /// Only devices whose name contains this string will be tried.
-const PERIPHERAL_NAME_MATCH_FILTER: &str = "Neuro";
+const PERIPHERAL_NAME_MATCH_FILTER: &str = "GotWay_39336";
 /// UUID of the characteristic for which we should subscribe to notifications.
 const NOTIFY_CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x6e400002_b534_f393_67a9_e50e24dccA9e);
 

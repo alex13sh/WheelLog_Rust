@@ -8,14 +8,27 @@ use std::error::Error;
 // use std::time::Duration;
 // use tokio::time;
 
-pub async fn get_list() -> Result<Vec<super::BlueToothInfo>, Box<dyn Error>> {
+pub async fn get_list_info() -> Result<Vec<super::BlueToothInfo>, Box<dyn Error>> {
+    let mut lst = Vec::new();
+    let f_list = get_list().await?;
+    for p in f_list.into_iter() {
+        lst.push( super::BlueToothInfo {
+                name: p.properties().await?.unwrap()
+                    .local_name.unwrap_or(String::from("(peripheral name unknown)")),
+                is_connected: p.is_connected().await?,
+        });
+    }
+    Ok(lst)
+}
+
+pub async fn get_list() -> Result<Vec<super::Peripheral>, Box<dyn Error>> {
     let manager = Manager::new().await?;
     let adapter_list = manager.adapters().await?;
     if adapter_list.is_empty() {
         eprintln!("No Bluetooth adapters found");
     }
 
-    let mut list = Vec::new();
+//     let mut list = Vec::new();
     for adapter in adapter_list.iter() {
         println!("Starting scan...");
         adapter
@@ -25,27 +38,7 @@ pub async fn get_list() -> Result<Vec<super::BlueToothInfo>, Box<dyn Error>> {
 //         time::sleep(Duration::from_secs(2)).await;
         let peripherals = adapter.peripherals().await?;
 
-        if peripherals.is_empty() {
-            eprintln!("->>> BLE peripheral devices were not found, sorry. Exiting...");
-        } else {
-            // All peripheral devices in range.
-            for peripheral in peripherals.iter() {
-                let properties = peripheral.properties().await?;
-                let is_connected = peripheral.is_connected().await?;
-                let local_name = properties
-                    .unwrap()
-                    .local_name
-                    .unwrap_or(String::from("(peripheral name unknown)"));
-                println!(
-                    "Peripheral {:?} is connected: {:?}",
-                    &local_name, is_connected
-                );
-                list.push(super::BlueToothInfo {
-                    name: local_name,
-                    is_connected: is_connected,
-                });
-            }
-        }
+        return Ok(peripherals);
     }
-    Ok(list)
+    Ok(Vec::new())
 }

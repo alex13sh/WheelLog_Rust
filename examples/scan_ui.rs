@@ -42,7 +42,7 @@ impl Application for Scan {
             Scan {
                 list: Default::default(),
             },
-            Command::perform(async{bluetooth::get_list().await.unwrap()}, Message::UpdatedList),
+            Command::perform(async{bluetooth::get_list_info().await.unwrap()}, Message::UpdatedList),
         )
     }
 
@@ -54,7 +54,7 @@ impl Application for Scan {
         match message {
             Message::UpdateList => {
 //                 return Command::perform(scan::get_list(), Message::UpdatedList);
-                return Command::perform(async{bluetooth::get_list().await.unwrap()}, Message::UpdatedList);
+                return Command::perform(async{bluetooth::get_list_info().await.unwrap()}, Message::UpdatedList);
             }
             Message::UpdatedList(lst) => self.list = lst.into_iter().map(|i| (i.name.clone(), i)).collect(),
         };
