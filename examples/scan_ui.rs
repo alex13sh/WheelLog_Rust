@@ -14,7 +14,8 @@ use iced::{Color, Command, Font, Length, Settings, Subscription};
 // use lazy_static::lazy_static;
 use std::collections::BTreeMap;
 
-mod scan;
+use BlueToothCommand::bluetooth;
+use bluetooth::BlueToothInfo;
 
 pub fn main() -> iced::Result {
     Scan::run(Settings::default())
@@ -22,12 +23,6 @@ pub fn main() -> iced::Result {
 
 struct Scan {
     list: BTreeMap<String, BlueToothInfo>,
-}
-
-#[derive(Debug, Clone)]
-pub struct BlueToothInfo {
-    name: String,
-    is_connected: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -47,7 +42,7 @@ impl Application for Scan {
             Scan {
                 list: Default::default(),
             },
-            Command::perform(async{scan::get_list().await.unwrap()}, Message::UpdatedList),
+            Command::perform(async{bluetooth::get_list().await.unwrap()}, Message::UpdatedList),
         )
     }
 
@@ -59,7 +54,7 @@ impl Application for Scan {
         match message {
             Message::UpdateList => {
 //                 return Command::perform(scan::get_list(), Message::UpdatedList);
-                return Command::perform(async{scan::get_list().await.unwrap()}, Message::UpdatedList);
+                return Command::perform(async{bluetooth::get_list().await.unwrap()}, Message::UpdatedList);
             }
             Message::UpdatedList(lst) => self.list = lst.into_iter().map(|i| (i.name.clone(), i)).collect(),
         };

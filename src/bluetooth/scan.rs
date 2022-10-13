@@ -5,14 +5,8 @@ use btleplug::api::{Central, CharPropFlags, Manager as _, Peripheral, ScanFilter
 use btleplug::platform::Manager;
 use futures::stream::StreamExt;
 use std::error::Error;
-use std::time::Duration;
-use tokio::time;
-use uuid::Uuid;
-
-/// Only devices whose name contains this string will be tried.
-const PERIPHERAL_NAME_MATCH_FILTER: &str = "Neuro";
-/// UUID of the characteristic for which we should subscribe to notifications.
-const NOTIFY_CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x6e400002_b534_f393_67a9_e50e24dccA9e);
+// use std::time::Duration;
+// use tokio::time;
 
 pub async fn get_list() -> Result<Vec<super::BlueToothInfo>, Box<dyn Error>> {
     let manager = Manager::new().await?;
@@ -28,7 +22,7 @@ pub async fn get_list() -> Result<Vec<super::BlueToothInfo>, Box<dyn Error>> {
             .start_scan(ScanFilter::default())
             .await
             .expect("Can't scan BLE adapter for connected devices...");
-        time::sleep(Duration::from_secs(2)).await;
+//         time::sleep(Duration::from_secs(2)).await;
         let peripherals = adapter.peripherals().await?;
 
         if peripherals.is_empty() {
