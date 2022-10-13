@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-iced = {git = "https://github.com/iced-rs/iced"}
+iced = {git = "https://github.com/iced-rs/iced", features=["tokio", "default_system_font"]}
 btleplug = "0.10"
 
 [dev-dependencies]
