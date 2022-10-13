@@ -9,23 +9,26 @@ use iced::widget::{
 };
 use iced::window;
 use iced::{Application, Element};
-use iced::{Color, Command, Font, Length, Settings, Subscription};
+use iced::{Color, Command, Font, Length, Settings, Subscription, time};
 
 use BlueToothCommand::bluetooth;
-use bluetooth::BlueToothInfo;
 
 pub fn main() -> iced::Result {
     EucInfo::run(Settings::default())
 }
 
 struct EucInfo {
-    p: Option<bluetooth::Peripheral>,
+    device: Option<bluetooth::Device>,
+
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     Connect(String),
-    Connected(Option<bluetooth::Peripheral>),
+    Reconnect, Disconnect,
+    Connected(Option<bluetooth::Device>),
+    UpdatedDevice(bluetooth::Device),
+    Tick,
 }
 
 impl Application for EucInfo {
@@ -37,9 +40,9 @@ impl Application for EucInfo {
     fn new(_flags: ()) -> (EucInfo, Command<Message>) {
         (
             EucInfo {
-                p: Default::default(),
+                device: Default::default(),
             },
-            Command::perform(async{bluetooth::connect("GotWay_39336").await.ok()}, Message::Connected),
+            Command::perform(Self::connect(), Message::Connected),
         )
     }
 
@@ -47,23 +50,74 @@ impl Application for EucInfo {
         String::from("Scan - Iced")
     }
 
+    fn subscription(&self) -> Subscription<Message> {
+        use std::time::Duration;
+        if self.is_connected() {
+            time::every(Duration::from_millis(1000))
+                .map(|_| Message::Tick)
+        } else {
+            time::every(Duration::from_millis(5000))
+                .map(|_| Message::Reconnect)
+        }
+    }
+
     fn update(&mut self, message: Message) -> Command<Message> {
         dbg!(&message);
         match message {
             Message::Connect(_name) => {
-                return Command::perform(async{bluetooth::connect("GotWay_39336").await.ok()}, Message::Connected);
+                return Command::perform(Self::connect(), Message::Connected);
             }
-            Message::Connected(p) => self.p = p,
+            Message::Reconnect => return Command::perform(Self::connect(), Message::Connected),
+            Message::Connected(d) => self.device = d,
+            Message::Disconnect => self.device = None,
+            Message::UpdatedDevice(d) => self.device = Some(d),
+            Message::Tick => if let Some(d) = self.device.clone() {
+                return Command::perform(Self::update_device(d), Message::UpdatedDevice);
+            }
         };
         Command::none()
     }
 
     fn view(&self) -> Element<Message> {
         column![
-            text( if self.p.is_some() {"Подключено"} else {"Не подключено"}),
-            button(text("Подключиться")).on_press(Message::Connect("GotWay_39336".to_owned()))
+            text( if self.is_connected() {
+                    format!("Устройство: {} -- Подключено", &self.device.as_ref().unwrap().info.name)
+                } else {"Не подключено".into()}),
+            if self.is_connected() {
+                button(text("Отключиться")).on_press(Message::Disconnect)
+            } else {
+                button(text("Подключиться")).on_press(Message::Connect(self.device_name()))
+            }
         ].spacing(20)
         .into()
     }
 
+}
+
+impl EucInfo {
+    fn device_name(&self) -> String {
+        "GotWay_39336".to_owned()
+    }
+    async fn connect() -> Option<bluetooth::Device> {
+        let p = {
+            let res = bluetooth::connect("GotWay_39336").await;
+            if let Err(ref err) = &res {
+                dbg!(err);
+                return None;
+            }
+            res.unwrap()
+        };
+        let d = bluetooth::Device::new(p).await;
+        Some(d)
+    }
+
+    fn is_connected(&self) -> bool {
+        if let Some(d) = &self.device {
+            d.is_connected()
+        } else {false}
+    }
+    async fn update_device(mut d: bluetooth::Device) -> bluetooth::Device {
+        d.update_info().await;
+        d
+    }
 }

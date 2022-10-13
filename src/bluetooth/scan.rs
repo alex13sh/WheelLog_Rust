@@ -38,6 +38,7 @@ pub async fn get_list() -> Result<Vec<super::Peripheral>, Box<dyn Error>> {
 //         time::sleep(Duration::from_secs(2)).await;
         let peripherals = adapter.peripherals().await?;
 
+        println!("Найденные устройства: {}", peripherals.len());
         return Ok(peripherals);
     }
     Ok(Vec::new())
@@ -53,10 +54,13 @@ pub async fn connect(name: &'static str) -> Result<super::Peripheral, Box<dyn Er
     let is_connected = peripheral.is_connected().await?;
     if !is_connected {
         // Connect if we aren't already connected.
-        peripheral.connect().await?
+        println!("Подключаюсь");
+        peripheral.connect().await?;
+        println!("Подключился");
     }
     let is_connected = peripheral.is_connected().await?;
     if is_connected {
+        println!("Возвращаю Устройство");
         return Ok(peripheral);
     } else {
         return Err("Устройство не подключается".into());
