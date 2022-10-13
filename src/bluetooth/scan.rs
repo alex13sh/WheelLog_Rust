@@ -42,3 +42,23 @@ pub async fn get_list() -> Result<Vec<super::Peripheral>, Box<dyn Error>> {
     }
     Ok(Vec::new())
 }
+
+pub async fn connect(name: &'static str) -> Result<super::Peripheral, Box<dyn Error>> {
+    let lst = get_list().await?;
+    let stream = futures::stream::iter(lst)
+        .filter_map(|p| async{Some((p.properties().await.ok()?.unwrap().local_name?, p))})
+//         .find(|(pname, p)| pname==name).await?;
+        .filter_map(|(pname, p)| async move {if pname == name {Some(p)} else {None}});
+    let peripheral = Box::pin(stream).next().await.ok_or("Устройство не найденно")?;
+    let is_connected = peripheral.is_connected().await?;
+    if !is_connected {
+        // Connect if we aren't already connected.
+        peripheral.connect().await?
+    }
+    let is_connected = peripheral.is_connected().await?;
+    if is_connected {
+        return Ok(peripheral);
+    } else {
+        return Err("Устройство не подключается".into());
+    }
+}

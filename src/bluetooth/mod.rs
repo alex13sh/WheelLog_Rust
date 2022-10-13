@@ -1,8 +1,6 @@
 mod scan;
 
-pub use scan::{
-    get_list, get_list_info
-};
+pub use scan::*;
 
 pub use btleplug::platform::Peripheral;
 
