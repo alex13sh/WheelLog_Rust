@@ -1,5 +1,7 @@
 use super::{Peripheral, PeripheralProperties};
 
+use uuid::Uuid;
+const CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x0000ffe1_0000_1000_8000_00805f9b34fb);
 #[derive(Debug, Clone)]
 pub struct BlueToothInfo {
     pub name: String,
@@ -70,4 +72,41 @@ impl EucInfo {
         } => Self {total_distance, settings, alerts, led_mode, light_mode, ..self},
         }
     }
+}
+
+#[test]
+fn test_unpacket() {
+    let mut bytes = [85, 170, 22, 194, 0, 0, 0, 0, 0, 0, 255, 66, 240, 237, 0, 1, 255, 248, 0, 24];
+    let mut bytes = bytes.as_slice();
+    let frame = super::Frame::try_from(&mut bytes);
+    dbg!(frame);
+
+    let mut bytes = [Vec::from(bytes), vec![90, 90, 90, 90, 85, 170, 1, 22, 150, 186, 40, 0, 2, 208, 0, 57, 0, 0, 0, 7]].concat();
+    let mut bytes = bytes.as_slice();
+    dbg!(bytes.len(), bytes[18]);
+    let frame = super::Frame::try_from(&mut bytes);
+//     dbg!(bytes.len(), bytes[18]);
+    dbg!(frame);
+
+    let mut bytes = [Vec::from(bytes), vec![0, 8, 4, 24, 90, 90, 90, 90]].concat();
+    let mut bytes = bytes.as_slice();
+    dbg!(bytes.len(), bytes[18]);
+    let frame = super::Frame::try_from(&mut bytes);
+    dbg!(frame);
+
+    assert!(false);
+}
+
+fn pop_front<'a, 'b>(slice: &'a mut &'b [i32]) {
+    let pos = slice.array_chunks().position(|c| c == &[2, 3]).unwrap() * 2;
+
+    *slice = &slice[pos..];
+}
+
+#[test]
+fn test_slice_pop() {
+    let mut slice =  &[0, 1, 2, 3][..];
+    pop_front(&mut slice);
+    println!("{:?}", slice);
+    assert!(false);
 }

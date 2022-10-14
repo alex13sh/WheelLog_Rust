@@ -12,7 +12,7 @@ use uuid::Uuid;
 /// Only devices whose name contains this string will be tried.
 const PERIPHERAL_NAME_MATCH_FILTER: &str = "GotWay_39336";
 /// UUID of the characteristic for which we should subscribe to notifications.
-const NOTIFY_CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x6e400002_b534_f393_67a9_e50e24dccA9e);
+const NOTIFY_CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x0000ffe1_0000_1000_8000_00805f9b34fb);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -48,6 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     "Peripheral {:?} is connected: {:?}",
                     &local_name, is_connected
                 );
+
                 // Check if it's the peripheral we want.
                 if local_name.contains(PERIPHERAL_NAME_MATCH_FILTER) {
                     println!("Found matching peripheral {:?}...", &local_name);
