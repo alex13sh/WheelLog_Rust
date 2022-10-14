@@ -35,7 +35,9 @@ impl TryFrom<&[u8; 24]> for Frame {
             speed: i16::from_be_bytes(to_arr(&bytes[4..6])) as f32 * 3.6 / 100.0,
             distance: u32::from_be_bytes(to_arr(&bytes[6..10])) as f32,
             current: i16::from_be_bytes(to_arr(&bytes[10..12])) as f32 / 100.0,
-            temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53) / 100.0,
+//             temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53) * 100.0,
+//             temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 333.87 + 21.00) * 100.0,
+            temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53),
         },
         0x04 => Frame::FrameB {
             total_distance: u32::from_be_bytes(bytes[2..6].try_into().unwrap()) as f32,

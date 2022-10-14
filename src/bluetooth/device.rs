@@ -25,7 +25,8 @@ impl Device {
         p.is_connected().await.unwrap();
         let (props, info) = Self::make_info(&p).await;
         let char = Self::make_char(&p).await;
-        let euc_info = Self::make_euc_info(&p, &char).await.unwrap();
+//         let euc_info = Self::make_euc_info(&p, &char).await.unwrap();
+        let euc_info = Default::default();
         Self {
             p, props, char, info, euc_info,
             light_mode: 0,
@@ -56,16 +57,20 @@ impl Device {
     pub fn is_connected(&self) -> bool {
         self.info.is_connected
     }
-    async fn make_euc_info(p: &Peripheral, chr: &Characteristic) -> Result<EucInfo, ()> {
+    pub async fn disconnect(self) {
+        self.p.disconnect().await.unwrap();
+        println!("Device::disconnected");
+    }
+    async fn make_euc_info(p: &Peripheral, chr: &Characteristic) -> Result<EucInfo, Box<dyn std::error::Error>> {
         use futures::StreamExt;
         let mut frame_ab = FrameAB::default();
-        p.subscribe(&chr).await.map_err(|_| ())?;
-        let mut stream = p.notifications().await.map_err(|_| ())?;
+        p.subscribe(&chr).await?;
+        let mut stream = p.notifications().await?;
         let mut info = None;
         let mut buf = Vec::new();
         while info.is_none() {
 //             let bytes = p.read(&chr).await.map_err(|_| ())?;
-            let bytes = stream.next().await.ok_or(())?.value;
+            let bytes = stream.next().await.ok_or("Больше нет значений")?.value;
 //             dbg!(&bytes);
             buf = [buf, bytes].concat();
             let mut bytes = buf.as_slice();

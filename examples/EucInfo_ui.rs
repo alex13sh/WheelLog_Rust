@@ -77,8 +77,15 @@ impl Application for EucInfo {
                 return Command::perform(Self::connect(self.device_name()), Message::Connected);
             }
             Message::Reconnect => return Command::perform(Self::connect(self.device_name()), Message::Connected),
-            Message::Connected(d) => self.device = d,
-            Message::Disconnect => self.device = None,
+            Message::Connected(d) => {
+                println!("Connected: {}", d.is_some());
+                self.device = d
+            },
+            Message::Disconnect => {
+                if let Some(d) = self.device.take() {
+                    return Command::perform(d.disconnect(), |_| Message::Tick);
+                }
+            }
             Message::UpdatedDevice(d) => self.device = Some(d),
             Message::Tick => if let Some(d) = self.device.clone() {
                 return Command::perform(Self::update_device(d), Message::UpdatedDevice);
