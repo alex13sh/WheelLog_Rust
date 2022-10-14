@@ -42,7 +42,7 @@ impl TryFrom<&[u8; 24]> for Frame {
             settings: Settings::from(u16::from_be_bytes(bytes[6..8].try_into().unwrap())),
             alerts: Alerts::from(bytes[12]),
             led_mode: bytes[13],
-            light_mode: bytes[15],
+            light_mode: bytes[14],
         },
         _ => return Err(()),
         };

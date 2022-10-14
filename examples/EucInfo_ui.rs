@@ -19,7 +19,6 @@ pub fn main() -> iced::Result {
 
 struct EucInfo {
     device: Option<bluetooth::Device>,
-
 }
 
 #[derive(Debug, Clone)]
@@ -35,7 +34,8 @@ enum Message {
 #[derive(Debug, Clone)]
 enum EucCommand {
     Beep,
-    LedTurn
+    LedTurn,
+    LightTurn,
 }
 
 impl Application for EucInfo {
@@ -84,7 +84,7 @@ impl Application for EucInfo {
                 return Command::perform(Self::update_device(d), Message::UpdatedDevice);
             }
             Message::EucCommand(cmd) => if let Some(ref d) = self.device {
-                Self::command(d.clone(), cmd);
+                return Command::perform(Self::command(d.clone(), cmd), Message::UpdatedDevice);
             },
         };
         Command::none()
@@ -103,6 +103,7 @@ impl Application for EucInfo {
                     button(text("Отключиться")).on_press(Message::Disconnect),
                     button(text("Beep")).on_press(Message::EucCommand(EucCommand::Beep)),
                     button(text("Led Turn")).on_press(Message::EucCommand(EucCommand::LedTurn)),
+                    button(text("Light Turn")).on_press(Message::EucCommand(EucCommand::LightTurn)),
                 ].spacing(10)
             } else {
                 row![button(text("Подключиться")).on_press(Message::Connect(self.device_name()))]
@@ -145,10 +146,12 @@ impl EucInfo {
         d
     }
 
-    fn command(device: bluetooth::Device, cmd: EucCommand) {
+    async fn command(device: bluetooth::Device, cmd: EucCommand) -> bluetooth::Device {
+        let euc_info = device.euc_info.clone();
         match cmd {
-        EucCommand::Beep => tokio::spawn(async move {device.beep().await}),
-        EucCommand::LedTurn => tokio::spawn(async move {device.set_led_mode(device.euc_info.led_mode+1).await}),
-        };
+        EucCommand::Beep => device.beep().await,
+        EucCommand::LedTurn => device.set_led_mode(euc_info.led_mode+1).await,
+        EucCommand::LightTurn => device.set_light_mode(euc_info.light_mode+1).await,
+        }
     }
 }

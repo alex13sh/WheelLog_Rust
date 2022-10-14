@@ -18,6 +18,7 @@ pub struct Device {
     char: Characteristic,
     pub info: BlueToothInfo,
     pub euc_info: EucInfo,
+    light_mode: u8,
 }
 impl Device {
     pub async fn new(p: Peripheral) -> Self {
@@ -26,7 +27,8 @@ impl Device {
         let char = Self::make_char(&p).await;
         let euc_info = Self::make_euc_info(&p, &char).await.unwrap();
         Self {
-            p, props, char, info, euc_info
+            p, props, char, info, euc_info,
+            light_mode: 0,
         }
     }
     async fn make_info(p: &Peripheral) -> (PeripheralProperties, BlueToothInfo) {
@@ -49,6 +51,7 @@ impl Device {
         self.props = props;
         self.info = info;
         self.euc_info = Self::make_euc_info(&self.p, &self.char).await.unwrap();
+        self.euc_info.light_mode = self.light_mode;
     }
     pub fn is_connected(&self) -> bool {
         self.info.is_connected
@@ -81,17 +84,29 @@ impl Device {
     async fn send_command(&self, cmd: &[u8]) {
         self.p.write(&self.char, cmd, btleplug::api::WriteType::WithoutResponse).await.unwrap();
     }
-    pub async fn beep(&self) {
+    pub async fn beep(self) -> Self {
         self.send_command(b"b").await;
+        self
     }
-    pub async fn set_led_mode(&self, mode: u8) {
-//         use std::time::Duration;
-//         use tokio::time;
-
+    pub async fn set_led_mode(mut self, mode: u8) -> Self {
         self.send_command(b"WM").await;
-//         time::sleep(Duration::from_secs(1)).await;
         self.send_command(&[mode + 0x30]).await;
-        self.beep().await;
+        self = self.beep().await;
+        self
+    }
+    pub async fn set_light_mode(mut self, mode: u8) -> Self {
+        self.light_mode = mode;
+        match mode {
+        0 => self.send_command(b"E").await,
+        1 => self.send_command(b"Q").await,
+        2 => self.send_command(b"T").await,
+        _ => {
+            self.send_command(b"E").await;
+            self.light_mode = 0;
+        }
+        };
+//         self = self.beep().await;
+        self
     }
 }
 
