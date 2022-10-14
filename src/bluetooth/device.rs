@@ -79,22 +79,40 @@ fn test_unpacket() {
     let mut bytes = [85, 170, 22, 194, 0, 0, 0, 0, 0, 0, 255, 66, 240, 237, 0, 1, 255, 248, 0, 24];
     let mut bytes = bytes.as_slice();
     let frame = super::Frame::try_from(&mut bytes);
-    dbg!(frame);
+    assert_eq!(frame, Err(()));
 
     let mut bytes = [Vec::from(bytes), vec![90, 90, 90, 90, 85, 170, 1, 22, 150, 186, 40, 0, 2, 208, 0, 57, 0, 0, 0, 7]].concat();
     let mut bytes = bytes.as_slice();
     dbg!(bytes.len(), bytes[18]);
     let frame = super::Frame::try_from(&mut bytes);
-//     dbg!(bytes.len(), bytes[18]);
-    dbg!(frame);
+    assert_eq!(frame, Ok(super::Frame::FrameA {
+            voltage: 58.26,
+            speed: 0.0,
+            distance: 0.0,
+            current: -1.9,
+            temperature: 0.25179997,
+        })
+    );
 
     let mut bytes = [Vec::from(bytes), vec![0, 8, 4, 24, 90, 90, 90, 90]].concat();
     let mut bytes = bytes.as_slice();
     dbg!(bytes.len(), bytes[18]);
     let frame = super::Frame::try_from(&mut bytes);
-    dbg!(frame);
+    assert_eq!(frame, Ok(super::Frame::FrameB {
+            total_distance: 18257594.0,
+            settings: super::frame::Settings {
+                pedals_mode: None,
+                speedAlarms: 2,
+                rollAngle: 0,
+                inMiles: false,
+            },
+            alerts: super::frame::Alerts::default(),
+            led_mode: 0,
+            light_mode: 7,
+        })
+    )
 
-    assert!(false);
+//     assert!(false);
 }
 
 fn pop_front<'a, 'b>(slice: &'a mut &'b [i32]) {

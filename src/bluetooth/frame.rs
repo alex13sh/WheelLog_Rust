@@ -1,5 +1,5 @@
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Frame {
     // Bytes 0-1:   frame header, 55 AA
     // Byte  18:    frame type, 00 for frame A
@@ -83,7 +83,7 @@ fn to_arr<const N: usize>(arr: &[u8]) -> [u8; N] {
 //     T::from_be_bytes(to_arr(bytes))
 // }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Settings {
     pub pedals_mode: Option<PedalMode>,
     pub speedAlarms: u8,
@@ -91,7 +91,7 @@ pub struct Settings {
     pub inMiles: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PedalMode {
     HighNibble,
     LowNibble,
@@ -110,10 +110,10 @@ impl From<u16> for Settings {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Alerts(Vec<Alert>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Alert {
     HighPower,
     Speed2,
