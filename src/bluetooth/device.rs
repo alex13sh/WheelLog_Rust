@@ -120,11 +120,11 @@ pub struct EucInfo {
 
     pub voltage: f32,   // Bytes 2-3:   BE voltage, fixed point, 1/100th (assumes 67.2 battery, rescale for other voltages)
     pub speed: f32,     // Bytes 4-5:   BE speed, fixed point, 3.6 * value / 100 km/h
-    pub distance: f32,  // Bytes 6-9:   BE distance, 32bit fixed point, meters
+    pub distance: super::frame::Distance,  // Bytes 6-9:   BE distance, 32bit fixed point, meters
     pub current: f32,   // Bytes 10-11: BE current, signed fixed point, 1/100th amperes
-    pub temperature: f32,// Bytes 12-13: BE temperature, (value / 340 + 36.53) / 100, Celsius degrees (MPU6050 native data)
+    pub temperature: super::frame::Temperature,// Bytes 12-13: BE temperature, (value / 340 + 36.53) / 100, Celsius degrees (MPU6050 native data)
 
-    pub total_distance: f32,    // Bytes 2-5:   BE total distance, 32bit fixed point, meters
+    pub total_distance: super::frame::Distance,    // Bytes 2-5:   BE total distance, 32bit fixed point, meters
     pub settings: super::frame::Settings, // Byte  6:     pedals mode (high nibble), speed alarms (low nibble)
     pub alerts: super::frame::Alerts,
     pub led_mode: u8,           // Byte  13:    LED mode

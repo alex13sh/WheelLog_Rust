@@ -7,13 +7,13 @@ pub enum Frame {
     FrameA {
         voltage: f32,   // Bytes 2-3:   BE voltage, fixed point, 1/100th (assumes 67.2 battery, rescale for other voltages)
         speed: f32,     // Bytes 4-5:   BE speed, fixed point, 3.6 * value / 100 km/h
-        distance: f32,  // Bytes 6-9:   BE distance, 32bit fixed point, meters
+        distance: Distance,  // Bytes 6-9:   BE distance, 32bit fixed point, meters
         current: f32,   // Bytes 10-11: BE current, signed fixed point, 1/100th amperes
-        temperature: f32,// Bytes 12-13: BE temperature, (value / 340 + 36.53) / 100, Celsius degrees (MPU6050 native data)
+        temperature: Temperature,// Bytes 12-13: BE temperature, (value / 340 + 36.53) / 100, Celsius degrees (MPU6050 native data)
     },
     // Byte  18:    frame type, 04 for frame B
     FrameB {
-        total_distance: f32,    // Bytes 2-5:   BE total distance, 32bit fixed point, meters
+        total_distance: Distance,    // Bytes 2-5:   BE total distance, 32bit fixed point, meters
         settings: Settings,     // Byte  6-7:     pedals mode (high nibble), speed alarms (low nibble)
         alerts: Alerts,
         led_mode: u8,           // Byte  13:    LED mode
@@ -33,14 +33,14 @@ impl TryFrom<&[u8; 24]> for Frame {
         0x00 => Frame::FrameA {
             voltage: u16::from_be_bytes(to_arr(&bytes[2..4])) as f32 / 100.0,
             speed: i16::from_be_bytes(to_arr(&bytes[4..6])) as f32 * 3.6 / 100.0,
-            distance: u32::from_be_bytes(to_arr(&bytes[6..10])) as f32,
+            distance: Distance(u32::from_be_bytes(to_arr(&bytes[6..10])) as f32),
             current: i16::from_be_bytes(to_arr(&bytes[10..12])) as f32 / 100.0,
 //             temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53) * 100.0,
 //             temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 333.87 + 21.00) * 100.0,
-            temperature: (i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53),
+            temperature: Temperature(i16::from_be_bytes(to_arr(&bytes[12..14])) as f32 / 340.0 + 36.53),
         },
         0x04 => Frame::FrameB {
-            total_distance: u32::from_be_bytes(bytes[2..6].try_into().unwrap()) as f32,
+            total_distance: Distance(u32::from_be_bytes(bytes[2..6].try_into().unwrap()) as f32),
             settings: Settings::from(u16::from_be_bytes(bytes[6..8].try_into().unwrap())),
             alerts: Alerts::from(bytes[12]),
             led_mode: bytes[13],
@@ -147,3 +147,9 @@ impl From<u8> for Alerts {
         Self(allerts)
     }
 }
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Temperature(f32);
+
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Distance(f32);
