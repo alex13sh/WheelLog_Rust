@@ -24,7 +24,7 @@ impl Device {
         p.is_connected().await.unwrap();
         let (props, info) = Self::make_info(&p).await;
         let char = Self::make_char(&p).await;
-        let euc_info = Self::make_euc_info(&p).await.unwrap();
+        let euc_info = Self::make_euc_info(&p, &char).await.unwrap();
         Self {
             p, props, char, info, euc_info
         }
@@ -49,15 +49,14 @@ impl Device {
         let (props, info) = Self::make_info(&self.p).await;
         self.props = props;
         self.info = info;
-        self.euc_info = Self::make_euc_info(&self.p).await.unwrap();
+        self.euc_info = Self::make_euc_info(&self.p, &self.char).await.unwrap();
     }
     pub fn is_connected(&self) -> bool {
         self.info.is_connected
     }
-    async fn make_euc_info(p: &Peripheral) -> Result<EucInfo, ()> {
+    async fn make_euc_info(p: &Peripheral, chr: &Characteristic) -> Result<EucInfo, ()> {
         use futures::StreamExt;
         let mut frame_ab = FrameAB::default();
-        let chr = Self::make_char(p).await;
         p.subscribe(&chr).await.map_err(|_| ())?;
         let mut stream = p.notifications().await.map_err(|_| ())?;
         let mut info = None;
