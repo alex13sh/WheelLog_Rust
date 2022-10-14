@@ -41,7 +41,6 @@ impl Device {
     async fn make_char(p: &Peripheral) -> Characteristic {
         p.discover_services().await.unwrap();
         let chars = p.characteristics();
-        dbg!(&chars);
         let char = chars.into_iter().find(|c| c.uuid == CHARACTERISTIC_UUID).unwrap();
         char
     }

@@ -54,18 +54,10 @@ impl <'a, 'b> TryFrom<&'a mut &'b [u8]> for Frame {
     type Error = ();
     fn try_from(mut bytes: &'a mut &'b [u8]) -> Result<Frame, ()> {
         let pos = bytes.array_chunks().position(|c| c == &[0x55, 0xAA]).ok_or(())? * 2;
-
-//         *bytes  = unsafe { std::slice::from_raw_parts(
-//             bytes.as_ptr().offset(pos as isize), bytes.len() - pos) };
-
         *bytes = &bytes[pos..];
         if bytes.len()>=24 {
             if let Ok(frame) = Frame::try_from(&bytes.as_chunks::<24>().0[0]) {
-                dbg!(bytes.len());
                 *bytes = &bytes[24..];
-//                 *bytes  = unsafe { std::slice::from_raw_parts(
-//                     bytes.as_ptr().offset(24), bytes.len() - 24) };
-                dbg!(bytes.len());
                 Ok(frame)
             } else {
                 Err(())
@@ -79,9 +71,6 @@ impl <'a, 'b> TryFrom<&'a mut &'b [u8]> for Frame {
 fn to_arr<const N: usize>(arr: &[u8]) -> [u8; N] {
     arr.try_into().unwrap()
 }
-// fn from_be<T>(bytes: &[u8]) -> T {
-//     T::from_be_bytes(to_arr(bytes))
-// }
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Settings {

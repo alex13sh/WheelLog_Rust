@@ -101,7 +101,7 @@ impl Application for EucInfo {
                 row![
                     button(text("Отключиться")).on_press(Message::Disconnect),
                     button(text("Beep")).on_press(Message::EucCommand(EucCommand::Beep)),
-                ]
+                ].spacing(10)
             } else {
                 row![button(text("Подключиться")).on_press(Message::Connect(self.device_name()))]
             },
