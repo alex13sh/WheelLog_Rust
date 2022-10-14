@@ -28,7 +28,13 @@ enum Message {
     Reconnect, Disconnect,
     Connected(Option<bluetooth::Device>),
     UpdatedDevice(bluetooth::Device),
+    EucCommand(EucCommand),
     Tick,
+}
+
+#[derive(Debug, Clone)]
+enum EucCommand {
+    Beep,
 }
 
 impl Application for EucInfo {
@@ -76,6 +82,9 @@ impl Application for EucInfo {
             Message::Tick => if let Some(d) = self.device.clone() {
                 return Command::perform(Self::update_device(d), Message::UpdatedDevice);
             }
+            Message::EucCommand(cmd) => if let Some(ref d) = self.device {
+                Self::command(d.clone(), cmd);
+            },
         };
         Command::none()
     }
@@ -89,10 +98,13 @@ impl Application for EucInfo {
                     )
                 } else {"Не подключено".into()}),
             if self.is_connected() {
-                button(text("Отключиться")).on_press(Message::Disconnect)
+                row![
+                    button(text("Отключиться")).on_press(Message::Disconnect),
+                    button(text("Beep")).on_press(Message::EucCommand(EucCommand::Beep)),
+                ]
             } else {
-                button(text("Подключиться")).on_press(Message::Connect(self.device_name()))
-            }
+                row![button(text("Подключиться")).on_press(Message::Connect(self.device_name()))]
+            },
         ].spacing(20)
         .into()
     }
@@ -129,5 +141,11 @@ impl EucInfo {
     async fn update_device(mut d: bluetooth::Device) -> bluetooth::Device {
         d.update_info().await;
         d
+    }
+
+    fn command(device: bluetooth::Device, cmd: EucCommand) {
+        match cmd {
+        EucCommand::Beep => tokio::spawn(async move {device.beep().await}),
+        };
     }
 }

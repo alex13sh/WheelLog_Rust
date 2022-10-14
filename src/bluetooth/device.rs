@@ -78,6 +78,13 @@ impl Device {
 //         dbg!(&info);
         Ok(info.unwrap())
     }
+
+    async fn send_command(&self, cmd: &[u8]) {
+        self.p.write(&self.char, cmd, btleplug::api::WriteType::WithoutResponse).await.unwrap();
+    }
+    pub async fn beep(&self) {
+        self.send_command(b"b").await;
+    }
 }
 
 #[derive(Debug, Clone, Default)]
