@@ -1,4 +1,5 @@
 use super::{Peripheral, PeripheralProperties};
+use btleplug::api::Characteristic;
 
 use uuid::Uuid;
 const CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x0000ffe1_0000_1000_8000_00805f9b34fb);
@@ -12,14 +13,16 @@ pub struct BlueToothInfo {
 pub struct Device {
     p: Peripheral,
     props: PeripheralProperties,
+    char: Characteristic,
     pub info: BlueToothInfo,
 //     pub euc_info: EucInfo,
 }
 impl Device {
     pub async fn new(p: Peripheral) -> Self {
         let (props, info) = Self::make_info(&p).await;
+        let char = Self::make_char(&p);
         Self {
-            p, props, info
+            p, props, char, info
         }
     }
     async fn make_info(p: &Peripheral) -> (PeripheralProperties, BlueToothInfo) {
@@ -31,6 +34,12 @@ impl Device {
             is_connected,
         };
         (props, info)
+    }
+    fn make_char(p: &Peripheral) -> Characteristic {
+        use btleplug::api::Peripheral;
+        let chars = p.characteristics();
+        let char = chars.into_iter().find(|c| c.uuid == CHARACTERISTIC_UUID).unwrap();
+        char
     }
     pub async fn update_info(&mut self) {
         let (props, info) = Self::make_info(&self.p).await;
