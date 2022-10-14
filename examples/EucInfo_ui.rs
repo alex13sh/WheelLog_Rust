@@ -55,14 +55,16 @@ impl Application for EucInfo {
         if self.is_connected() {
             time::every(Duration::from_millis(1000))
                 .map(|_| Message::Tick)
-        } else {
-            time::every(Duration::from_millis(5000))
-                .map(|_| Message::Reconnect)
+        }
+        else {
+//             time::every(Duration::from_millis(5000))
+//                 .map(|_| Message::Reconnect)
+            Subscription::none()
         }
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        dbg!(&message);
+//         dbg!(&message);
         match message {
             Message::Connect(_name) => {
                 return Command::perform(Self::connect(self.device_name()), Message::Connected);
@@ -80,8 +82,11 @@ impl Application for EucInfo {
 
     fn view(&self) -> Element<Message> {
         column![
-            text( if self.is_connected() {
-                    format!("Устройство: {} -- Подключено", &self.device.as_ref().unwrap().info.name)
+            text( if let Some(d) = self.get_connect_device() {
+                    format!("Устройство: {name} -- Подключено\nSpeed: {info:#?}"
+                        , name = d.info.name
+                        , info = &d.euc_info
+                    )
                 } else {"Не подключено".into()}),
             if self.is_connected() {
                 button(text("Отключиться")).on_press(Message::Disconnect)
@@ -115,6 +120,11 @@ impl EucInfo {
         if let Some(d) = &self.device {
             d.is_connected()
         } else {false}
+    }
+    fn get_connect_device(&self) -> Option<&bluetooth::Device> {
+        if self.is_connected() {
+            self.device.as_ref()
+        } else {None}
     }
     async fn update_device(mut d: bluetooth::Device) -> bluetooth::Device {
         d.update_info().await;
