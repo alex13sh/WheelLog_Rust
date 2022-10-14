@@ -35,6 +35,7 @@ enum Message {
 #[derive(Debug, Clone)]
 enum EucCommand {
     Beep,
+    LedTurn
 }
 
 impl Application for EucInfo {
@@ -101,6 +102,7 @@ impl Application for EucInfo {
                 row![
                     button(text("Отключиться")).on_press(Message::Disconnect),
                     button(text("Beep")).on_press(Message::EucCommand(EucCommand::Beep)),
+                    button(text("Led Turn")).on_press(Message::EucCommand(EucCommand::LedTurn)),
                 ].spacing(10)
             } else {
                 row![button(text("Подключиться")).on_press(Message::Connect(self.device_name()))]
@@ -146,6 +148,7 @@ impl EucInfo {
     fn command(device: bluetooth::Device, cmd: EucCommand) {
         match cmd {
         EucCommand::Beep => tokio::spawn(async move {device.beep().await}),
+        EucCommand::LedTurn => tokio::spawn(async move {device.set_led_mode(device.euc_info.led_mode+1).await}),
         };
     }
 }

@@ -84,6 +84,15 @@ impl Device {
     pub async fn beep(&self) {
         self.send_command(b"b").await;
     }
+    pub async fn set_led_mode(&self, mode: u8) {
+//         use std::time::Duration;
+//         use tokio::time;
+
+        self.send_command(b"WM").await;
+//         time::sleep(Duration::from_secs(1)).await;
+        self.send_command(&[mode + 0x30]).await;
+        self.beep().await;
+    }
 }
 
 #[derive(Debug, Clone, Default)]
