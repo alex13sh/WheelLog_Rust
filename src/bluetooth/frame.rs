@@ -153,3 +153,31 @@ pub struct Temperature(f32);
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Distance(f32);
+
+impl std::fmt::Display for Temperature {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:.2} C.", self.0)
+    }
+}
+
+impl std::fmt::Display for Distance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let txt = self.0.to_string();
+        let ln = txt.len();
+        match ln {
+        0..=3 => {
+            let m = txt;
+            write!(f, "{}m.", m)
+        }
+        4..=6 => {
+            let (km, m) = (&txt[..ln-3], &txt[ln-3..]);
+            write!(f, "{}km. {}m.", km, m)
+        }
+        7..=9 => {
+            let (kkm, km, m) = (&txt[..ln-6], &txt[ln-6..ln-3], &txt[ln-3..]);
+            write!(f, "{}kkm. {}km. {}m.", kkm, km, m)
+        },
+        _ => write!(f, "Err")
+        }
+    }
+}

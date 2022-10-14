@@ -131,6 +131,28 @@ pub struct EucInfo {
     pub light_mode: u8,
 }
 
+impl std::fmt::Display for EucInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f,
+"Информация о колесе:
+Скорость: {speed}
+Дистанция: {distance}
+Пробег: {total_distance}
+
+Напряежение: {voltage}
+Ток: {current}
+Температура: {temperature}
+"
+            , voltage = self.voltage
+            , speed = self.speed
+            , distance = self.distance
+            , current = self.current
+            , temperature = self.temperature
+            , total_distance = self.total_distance
+        )
+    }
+}
+
 impl EucInfo {
     fn set_frame(self, frame: Frame) -> Self {
         match frame {

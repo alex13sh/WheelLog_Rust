@@ -100,7 +100,7 @@ impl Application for EucInfo {
     fn view(&self) -> Element<Message> {
         column![
             text( if let Some(d) = self.get_connect_device() {
-                    format!("Устройство: {name} -- Подключено\nSpeed: {info:#?}"
+                    format!("Устройство: {name} -- Подключено\nSpeed: {info}"
                         , name = d.info.name
                         , info = &d.euc_info
                     )
@@ -116,6 +116,7 @@ impl Application for EucInfo {
                 row![button(text("Подключиться")).on_press(Message::Connect(self.device_name()))]
             },
         ].spacing(20)
+        .padding(50)
         .into()
     }
 
