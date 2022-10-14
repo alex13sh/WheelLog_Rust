@@ -1,5 +1,6 @@
 use super::{Peripheral, PeripheralProperties};
 use btleplug::api::Characteristic;
+use btleplug::api::Peripheral as _;
 
 use uuid::Uuid;
 const CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x0000ffe1_0000_1000_8000_00805f9b34fb);
@@ -26,7 +27,6 @@ impl Device {
         }
     }
     async fn make_info(p: &Peripheral) -> (PeripheralProperties, BlueToothInfo) {
-        use btleplug::api::Peripheral;
         let props = p.properties().await.unwrap().unwrap();
         let is_connected = p.is_connected().await.unwrap();
         let info = BlueToothInfo {
@@ -36,7 +36,6 @@ impl Device {
         (props, info)
     }
     fn make_char(p: &Peripheral) -> Characteristic {
-        use btleplug::api::Peripheral;
         let chars = p.characteristics();
         let char = chars.into_iter().find(|c| c.uuid == CHARACTERISTIC_UUID).unwrap();
         char
